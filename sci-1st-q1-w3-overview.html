@@ -19,8 +19,8 @@ body{font-family:'Nunito','Century Gothic','Arial Rounded MT Bold',Verdana,sans-
 .header-sub{font-size:11px;color:#55C8E8;letter-spacing:0.5px}
 .header-title{font-size:28px;color:#fff;font-weight:900;line-height:1.15;margin-bottom:6px}
 .header-week{font-size:15px;color:#A8D0E6;font-weight:600}
-.info-strip{display:flex;flex-wrap:wrap;background:#fff;border-bottom:2px solid #E8DDD2;justify-content:center}
-.info-item{flex:1;min-width:200px;padding:16px 20px;border-right:1px solid #E8DDD2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}
+.info-strip{display:flex;flex-wrap:wrap;background:#fff;border-bottom:2px solid #E8DDD2;justify-content:center;position:relative;z-index:10;overflow:visible}
+.info-item{flex:1;min-width:200px;padding:16px 20px;border-right:1px solid #E8DDD2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;overflow:visible}
 .info-item:last-child{border-right:none}
 .info-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
 .info-label{font-size:10px;color:#9A8E82;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
@@ -54,15 +54,37 @@ body{font-family:'Nunito','Century Gothic','Arial Rounded MT Bold',Verdana,sans-
 .ican-item:last-child{margin-bottom:0}
 .ican-num{width:34px;height:34px;border-radius:50%;color:#fff;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.12)}
 .ican-text{font-size:17px;color:#1B4332;line-height:1.6;padding-top:4px}
-.vocab-box{display:flex;flex-wrap:wrap;gap:10px;padding:4px 0}
-.vocab-tag{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#E1F5FE,#B3E5FC);border:2px solid #81D4FA;border-radius:30px;padding:8px 18px;font-size:16px;font-weight:800;color:#0277BD}
+.vocab-grid{display:flex;flex-wrap:wrap;gap:16px;padding:4px 0}
+.vocab-flip{flex:1;min-width:200px;height:160px;perspective:800px;cursor:pointer}
+.vocab-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.5s}
+.vocab-flip.flipped .vocab-inner{transform:rotateY(180deg)}
+.vocab-front,.vocab-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;text-align:center}
+.vocab-front{background:linear-gradient(135deg,#E8EAF6,#C5CAE9);border:2px solid #9FA8DA}
+.vocab-back{background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border:2px solid #A5D6A7;transform:rotateY(180deg)}
+.vocab-emoji{font-size:32px;margin-bottom:6px}
+.vocab-word{font-size:18px;font-weight:800;color:#283593;letter-spacing:1px;text-transform:uppercase}
+.vocab-tap{font-size:11px;color:#5C6BC0;margin-top:6px;font-weight:600}
+.vocab-def{font-size:15px;color:#2E7D32;font-weight:700;line-height:1.5}
 .reflection-box{background:linear-gradient(135deg,#F3E5F5,#E1BEE7);border:2px solid #CE93D8;border-radius:16px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px}
 .ref-text{font-size:17px;color:#2B1D12;line-height:1.7;font-style:italic}
 .callout{border-radius:14px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
 .callout-icon{font-size:28px;flex-shrink:0;margin-top:2px}
 .callout p{font-size:16px;color:#2B1D12;line-height:1.65;margin:0}
 .callout-family{background:linear-gradient(135deg,#FFF8E1,#FFECB3);border:2px solid #FFD54F}
-.std-tag{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:#E8F5E9;border:1.5px solid #A5D6A7;color:#2E7D32}
+.std-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.3px;position:relative;cursor:help;transition:transform 0.15s,box-shadow 0.15s}
+.std-tag:hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(0,0,0,0.12)}
+.std-tag .std-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);width:220px;background:#1B4332;color:#fff;font-size:12px;font-weight:600;line-height:1.45;padding:10px 14px;border-radius:12px;text-align:center;letter-spacing:0;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 0.2s,visibility 0.2s,transform 0.2s;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
+.std-tag .std-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1B4332}
+.std-tag:hover .std-tooltip{opacity:1;visibility:visible;transform:translateX(-50%) translateY(-2px)}
+.std-tag .std-tooltip .std-code{display:block;color:#95D5B2;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:800}
+.std-tag:nth-child(8n+1){background:#FCE4EC;border:1.5px solid #F48FB1;color:#C2185B}
+.std-tag:nth-child(8n+2){background:#E8F5E9;border:1.5px solid #A5D6A7;color:#2E7D32}
+.std-tag:nth-child(8n+3){background:#E1F5FE;border:1.5px solid #81D4FA;color:#0277BD}
+.std-tag:nth-child(8n+4){background:#FFF8E1;border:1.5px solid #FFD54F;color:#F57F17}
+.std-tag:nth-child(8n+5){background:#F3E5F5;border:1.5px solid #CE93D8;color:#6A1B9A}
+.std-tag:nth-child(8n+6){background:#FFF3E0;border:1.5px solid #FFCC80;color:#E65100}
+.std-tag:nth-child(8n+7){background:#E0F7FA;border:1.5px solid #80DEEA;color:#00838F}
+.std-tag:nth-child(8n+8){background:#F1F8E9;border:1.5px solid #AED581;color:#558B2F}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:22px}
 .footer{background:#0E1C42;color:rgba(255,255,255,0.5);text-align:center;padding:16px;font-size:12px;font-weight:600}
 .footer a{color:#55C8E8;text-decoration:none}
@@ -298,7 +320,7 @@ body{font-family:'Nunito','Century Gothic','Arial Rounded MT Bold',Verdana,sans-
   <div class="info-item">
     <div class="info-icon" style="background:linear-gradient(135deg,#F3E5F5,#E1BEE7);">📋</div>
     <div class="info-label">Standards</div>
-    <div style="margin-top:4px;"><span class="std-tag">SC.1.N.1.1</span> <span class="std-tag">SC.1.N.1.2</span></div>
+    <div style="margin-top:4px;"><span class="std-tag">SC.1.N.1.1<span class="std-tooltip"><span class="std-code">SC.1.N.1.1</span>Raise questions about the natural world, investigate them in teams, and generate appropriate explanations.</span></span> <span class="std-tag">SC.1.N.1.2<span class="std-tooltip"><span class="std-code">SC.1.N.1.2</span>Using the five senses as tools, make careful observations, describe objects in terms of number, shape, texture, size, weight, color, and motion.</span></span></div>
   </div>
 </div>
 <div class="content">
@@ -339,10 +361,14 @@ body{font-family:'Nunito','Century Gothic','Arial Rounded MT Bold',Verdana,sans-
       <div><div class="card-head-label">Key Term</div><div class="card-head-title">Vocabulary Word</div></div>
     </div>
     <div class="card-body">
-      <div class="vocab-box">
-        <div class="vocab-tag">🧠 senses</div>
+      <div class="vocab-grid">
+        <div class="vocab-flip" onclick="this.classList.toggle('flipped')">
+          <div class="vocab-inner">
+            <div class="vocab-front"><div class="vocab-emoji">🧠</div><div class="vocab-word">SENSES</div><div class="vocab-tap">Tap to reveal definition</div></div>
+            <div class="vocab-back"><div class="vocab-def">The five ways our body takes in information about the world &mdash; sight, hearing, smell, taste, and touch.</div></div>
+          </div>
+        </div>
       </div>
-      <p style="margin-top:14px;font-size:15px;color:#5A4D3E;">The five ways our body takes in information about the world &mdash; sight, hearing, smell, taste, and touch.</p>
     </div>
   </div>
 
