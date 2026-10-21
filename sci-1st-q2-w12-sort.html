@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pumpkin Life Cycle Sort</title>
+<style>
+  :root{
+    --cream:#FFF6E6; --ink:#2B2A28; --card:#FFFFFF;
+    --pumpkin:#F2711C; --pumpkin-deep:#D2540A; --leaf:#4C9A2A;
+    --good:#4CAF50; --bad:#E05252;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;min-height:100%;font-family:'Trebuchet MS','Segoe UI',sans-serif;background:var(--cream);color:var(--ink);overflow-x:hidden;}
+  .wrap{max-width:960px;margin:0 auto;padding:18px 16px 32px;}
+  header{text-align:center;margin-bottom:8px;}
+  h1{font-size:clamp(1.6rem,5vw,2.4rem);margin:4px 0 2px;color:var(--pumpkin-deep);}
+  p.sub{margin:0;font-size:1rem;color:#5a5854;}
+  .scoreboard{display:flex;justify-content:center;gap:16px;margin:10px 0 16px;font-weight:bold;flex-wrap:wrap;}
+  .scoreboard span{background:var(--card);border-radius:999px;padding:6px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08);}
+  .tray{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;min-height:120px;align-items:center;}
+  .stage-card{
+    width:128px;height:112px;background:var(--card);border:3px solid #eadfc8;border-radius:18px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    font-size:2.2rem;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+    box-shadow:0 3px 0 #eadfc8;transition:transform .15s,box-shadow .15s,border-color .15s,opacity .3s;
+  }
+  .stage-card .label{font-size:.95rem;font-weight:bold;}
+  .stage-card:hover{transform:translateY(-2px);}
+  .stage-card.selected{border-color:var(--pumpkin);transform:scale(1.06);box-shadow:0 0 0 4px rgba(242,113,28,.2),0 3px 0 var(--pumpkin);}
+  .stage-card.wrong{animation:shake .4s;border-color:var(--bad);}
+  .stage-card.done{opacity:0;transform:scale(.4);pointer-events:none;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .hint{text-align:center;color:#7a766d;min-height:1.5em;margin:12px 0;font-size:1rem;}
+  .slots{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;}
+  .slot{
+    width:150px;min-height:150px;border-radius:22px;background:linear-gradient(160deg,#FFB070,var(--pumpkin));
+    color:#fff;text-align:center;padding:12px 8px;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.12);
+    display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform .12s;
+  }
+  .slot:active{transform:translateY(3px);}
+  .slot .num{width:36px;height:36px;border-radius:50%;background:#fff;color:var(--pumpkin-deep);font-weight:bold;font-size:1.2rem;display:flex;align-items:center;justify-content:center;}
+  .slot .filled{font-size:2.4rem;min-height:2.8rem;}
+  .slot .fname{font-weight:bold;font-size:1rem;}
+  .slot .clue{font-size:.8rem;line-height:1.25;opacity:.95;}
+  .slot.glow{box-shadow:0 0 0 5px rgba(255,255,255,.7),0 6px 0 rgba(0,0,0,.12);}
+  .arrow{align-self:center;font-size:1.6rem;color:var(--leaf);}
+  @media (max-width:700px){.arrow{display:none;}}
+  .celebrate{text-align:center;font-weight:bold;font-size:1.25rem;color:var(--pumpkin-deep);margin-top:16px;display:none;}
+  .controls{text-align:center;margin-top:18px;}
+  button.reset{background:var(--ink);color:#fff;border:none;border-radius:999px;padding:10px 22px;font-size:1rem;cursor:pointer;}
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){--cream:#1F1B16;--ink:#F4F0E8;--card:#2B2620;}
+    .stage-card{border-color:#40372b;box-shadow:0 3px 0 #40372b;}
+    p.sub,.hint{color:#bdb6a8;}
+  }
+  :root[data-theme="dark"]{--cream:#1F1B16;--ink:#F4F0E8;--card:#2B2620;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🎃 Pumpkin Life Cycle</h1>
+    <p class="sub">Tap a stage, then tap where it goes in the cycle!</p>
+  </header>
+  <div class="scoreboard">
+    <span id="score">✅ Correct: 0</span>
+    <span id="remaining">🧩 Left: 5</span>
+  </div>
+  <div class="tray" id="tray"></div>
+  <div class="hint" id="hint">Tap a stage above to pick it up.</div>
+  <div class="slots" id="slots"></div>
+  <div class="celebrate" id="celebrate">🎉 You built the pumpkin life cycle! The new seeds start it all over again! 🎉</div>
+  <div class="controls"><button class="reset" id="resetBtn">🔄 Start Over</button></div>
+</div>
+
+<script>
+const STAGES = [
+  {name:"Seed",    emoji:"🌰", clue:"A seed is planted in the soil."},
+  {name:"Sprout",  emoji:"🌱", clue:"A tiny green sprout pushes up."},
+  {name:"Vine",    emoji:"🌿", clue:"Long vines grow and spread out."},
+  {name:"Flower",  emoji:"🌼", clue:"Yellow flowers bloom on the vine."},
+  {name:"Pumpkin", emoji:"🎃", clue:"A pumpkin grows and turns orange. It has new seeds inside!"},
+];
+let selected = null, correct = 0;
+const tray = document.getElementById('tray');
+const slotsEl = document.getElementById('slots');
+const hint = document.getElementById('hint');
+const celebrate = document.getElementById('celebrate');
+
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function render(){
+  tray.innerHTML=''; slotsEl.innerHTML='';
+  let order = shuffle(STAGES.map((s,i)=>i));
+  if (order.every((v,i)=>v===i)) order = shuffle(order);
+  order.forEach(i=>{
+    const s=STAGES[i], el=document.createElement('div');
+    el.className='stage-card'; el.dataset.idx=i;
+    el.innerHTML=`<div>${s.emoji}</div><div class="label">${s.name}</div>`;
+    el.addEventListener('click',()=>pick(el));
+    tray.appendChild(el);
+  });
+  STAGES.forEach((s,i)=>{
+    const slot=document.createElement('div');
+    slot.className='slot'; slot.dataset.idx=i;
+    slot.innerHTML=`<div class="num">${i+1}</div><div class="filled"></div><div class="fname"></div><div class="clue"></div>`;
+    slot.addEventListener('click',()=>place(slot));
+    slotsEl.appendChild(slot);
+    if(i<STAGES.length-1){const a=document.createElement('div');a.className='arrow';a.textContent='➜';slotsEl.appendChild(a);}
+  });
+}
+
+function pick(el){
+  if(el.classList.contains('done'))return;
+  document.querySelectorAll('.stage-card.selected').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected'); selected=el;
+  hint.textContent='Now tap the box where this stage goes.';
+}
+
+function place(slot){
+  if(!selected){hint.textContent='Pick a stage from the top first!';return;}
+  if(slot.dataset.filled){hint.textContent='That spot is already filled. Try another box!';return;}
+  const s=STAGES[selected.dataset.idx];
+  slot.classList.add('glow'); setTimeout(()=>slot.classList.remove('glow'),300);
+  if(selected.dataset.idx===slot.dataset.idx){
+    slot.dataset.filled='1';
+    slot.querySelector('.filled').textContent=s.emoji;
+    slot.querySelector('.fname').textContent=s.name;
+    slot.querySelector('.clue').textContent=s.clue;
+    selected.classList.add('done'); selected=null; correct++;
+    hint.textContent=`Yes! ${s.name} goes in spot ${+slot.dataset.idx+1}.`;
+    document.getElementById('score').textContent=`✅ Correct: ${correct}`;
+    document.getElementById('remaining').textContent=`🧩 Left: ${STAGES.length-correct}`;
+    if(correct===STAGES.length) setTimeout(()=>celebrate.style.display='block',400);
+  } else {
+    const el=selected; el.classList.remove('selected'); el.classList.add('wrong'); selected=null;
+    setTimeout(()=>el.classList.remove('wrong'),400);
+    hint.textContent='Not quite. Think about what happens first, next, and last!';
+  }
+}
+
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  correct=0; selected=null; celebrate.style.display='none';
+  hint.textContent='Tap a stage above to pick it up.';
+  document.getElementById('score').textContent='✅ Correct: 0';
+  document.getElementById('remaining').textContent=`🧩 Left: ${STAGES.length}`;
+  render();
+});
+render();
+</script>
+</body>
+</html>
